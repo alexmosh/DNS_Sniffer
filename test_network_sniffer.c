@@ -1,3 +1,38 @@
+/*
+ * File: test_network_sniffer.c
+ * Description: This file contains unit tests for the network sniffer functionality. 
+ *              It includes test cases for network packet processing, DNS packet parsing, 
+ *              interface listing, and logging functionality. The tests use the CUnit testing 
+ *              framework to validate that the network sniffer's core features are working 
+ *              correctly. These tests ensure that the program handles various DNS packet 
+ *              scenarios (e.g., valid, truncated, invalid) and performs as expected in 
+ *              different edge cases.
+ *
+ * Author: [Your Name]
+ * Date: [Current Date or Creation Date]
+ *
+ * License: [Your License Type, e.g., MIT, GPL, etc.]
+ *
+ * Dependencies:
+ *   - CUnit library (for unit testing)
+ *   - network_sniffer.h (for accessing sniffer functionality)
+ *   - standard C libraries (stdio, stdlib, string, etc.)
+ *
+ * Usage:
+ *   - This file contains unit tests specifically designed for testing the core 
+ *     functionality of the network sniffer program, including DNS packet parsing, 
+ *     stack operations, and packet capture.
+ *   - Tests are executed using the CUnit framework, and results are displayed in 
+ *     the terminal or the specified test output.
+ *   - The file is intended to be compiled and run separately from the main application 
+ *     to validate correctness and ensure robustness of the network sniffer functionality.
+ *
+ * Change History:
+ *   [Date] - Initial version of unit tests for network sniffer.
+ *   [Date] - [Changes made in the file, bug fixes, or added tests].
+ */
+
+
 #include "network_sniffer.h"
 #include "/opt/homebrew/Cellar/cunit/2.1-3/include/CUnit/CUnit.h"
 #include "/opt/homebrew/Cellar/cunit/2.1-3/include/CUnit/Basic.h"
