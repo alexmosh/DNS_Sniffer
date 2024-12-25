@@ -17,8 +17,6 @@
 #include <net/if_dl.h>
 #include <ctype.h>
 #include "cJSON/cJSON.h"
-
-
 #define MAX_DOMAINS 100
 #define ETHERNET_HEADER_SIZE 14
 #define IP_HEADER_SIZE 20
@@ -65,5 +63,6 @@ void display_stack(DNSStack *s);
 void log_printf(const char *format, ...);
 void writeFile(const char *filename, const char *content);
 char *readFile(const char *filename);
-
+void parse_dns_packet(const unsigned char *dns_data, int data_len);
+void print_banner();
 #endif // NETWORK_SNIFFER_H

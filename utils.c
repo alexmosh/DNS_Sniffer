@@ -3,8 +3,20 @@
 
 #include "network_sniffer.h"
 
-FILE *log_file;
+FILE *log_file = NULL;  // Define log_file
+//int sniffing = 0;       // Define sniffing variable
 
+void print_banner() {
+    printf("===============================================\n");
+    printf("      SSSSS   AAAAA   M     M    \n");
+    printf("     S        A   A   MM   MM    \n");
+    printf("     SSSSS    AAAAA   M M M M    \n");
+    printf("         S    A   A   M  M  M    \n");
+    printf("     SSSSS    A   A   M     M    \n");
+    printf("===============================================\n");
+    printf("       DNS Sniffer - Monitoring Traffic       \n");
+    printf("===============================================\n\n");
+}
 
 // Function to read the content of a file into a string
 char *readFile(const char *filename) {

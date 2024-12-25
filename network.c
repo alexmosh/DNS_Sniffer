@@ -7,7 +7,6 @@ void list_interfaces() {
    char errbuf[PCAP_ERRBUF_SIZE];
    pcap_if_t *interfaces, *temp;
 
-
    if (pcap_findalldevs(&interfaces, errbuf) == -1) {
        fprintf(stderr, "Error finding devices: %s\n", errbuf);
        return;
@@ -62,7 +61,7 @@ void list_interfaces() {
 
 
 void stop_sniffing(int sig) {
-    sniffing = 0;
+    int sniffing = 0;
 }
 
 void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, const unsigned char *packet) {

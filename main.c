@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
     }
 
     while (1) {
+        print_banner();
         printf("\n\nNetwork Sniffer Tool\n");
         printf("----------------------\n");
         printf("1. List Available Interfaces\n");
