@@ -65,6 +65,47 @@ void writeFile(const char *filename, const char *content) {
     fclose(file);  // Close the file
 }
 
+// Safe log printing function
+void safe_log_printf(const char *format, ...) {
+    if (!log_file) {
+        fprintf(stderr, "Error: log file not initialized.\n");
+        return;  // Avoid crashing if log file is not opened.
+    }
+
+    // Get the current time for the log entry
+    time_t now = time(NULL);  // Get current time
+    struct tm *local_time = localtime(&now);  // Convert time to local time
+
+    // Print timestamp to log file
+    fprintf(log_file, "[%02d-%02d-%02d %02d:%02d:%02d] ", 
+            local_time->tm_year + 1900, local_time->tm_mon + 1, local_time->tm_mday,
+            local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
+
+    // Prepare the formatted message
+    va_list args;
+    va_start(args, format);
+    
+    char buffer[1024];  // Ensure this buffer is large enough for your messages
+    int result = vsnprintf(buffer, sizeof(buffer), format, args);  // Safely format the message
+    
+    va_end(args);
+
+    // Check if the formatting was successful
+    if (result < 0) {
+        fprintf(stderr, "Error: Log formatting failed.\n");
+        return;  // If formatting fails, avoid further processing
+    }
+
+    // Write the formatted message to the log file
+    fprintf(log_file, "%s\n", buffer);
+    fflush(log_file);  // Ensure the log message is written immediately
+
+    // Print to the console (stdout)
+    // Again, we use vsnprintf to avoid buffer overflow
+    printf("%s\n", buffer);
+}
+
+
 // Function to log messages with a timestamp
 void log_printf(const char *format, ...) {
     time_t now = time(NULL);  // Get current time
@@ -78,14 +119,16 @@ void log_printf(const char *format, ...) {
     va_start(args, format);  // Initialize the variable arguments
     char buffer[1024];
     vsnprintf(buffer, sizeof(buffer), format, args);  // Format the log message
-    va_end(args);
+    va_end(args);  // End the variable argument list
     
     fprintf(log_file, "%s\n", buffer);  // Write the formatted message to the log file
     fflush(log_file);  // Ensure the log message is written immediately
+
     // Print the message to the console (stdout)
-    vprintf(format, args);
-    va_end(args);
+    vprintf(format, args);  // Print the message to stdout
 }
+
+
 
 // Function to initialize the stack (set the top to -1)
 void init_stack(DNSStack *s) {

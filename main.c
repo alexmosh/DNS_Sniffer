@@ -32,11 +32,9 @@
 #include "network_sniffer.h"
 
 // Global Variables
-char resolved_domains[MAX_DOMAINS][256];  // Array to store resolved domains
+//char resolved_domains[MAX_DOMAINS][256];  // Array to store resolved domains
 int sniffing = 1;  // Flag to control sniffing loop
 extern int disable_verification;  // External variable for verification status
-FILE *log_file;  // Log file pointer for logging sniffing results
-DNSStack stack;  // Stack to manage DNS queries
 
 // Main function - Entry point of the application
 int main(int argc, char *argv[]) {
@@ -76,7 +74,7 @@ int main(int argc, char *argv[]) {
     // Initialize the DNS stack
     init_stack(&stack);
     log_file = fopen("sniffer.log", "a");  // Open log file in append mode
-    if (!log_file) {
+    if (NULL ==log_file) {
         fprintf(stderr, "Error: Unable to open log file\n");
         return 1;  // Exit if unable to open log file
     }

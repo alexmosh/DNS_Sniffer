@@ -44,9 +44,26 @@
 #include <time.h>  // Time functions
 #include <stdarg.h>  // Variable argument list
 #include <ifaddrs.h>  // Interface address structures
-#include <net/if_dl.h>  // Link layer address
 #include <ctype.h>  // Character handling
 #include "cJSON/cJSON.h"  // JSON parsing library
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netpacket/packet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/if_ether.h>
+#include <netpacket/packet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <netinet/if_ether.h>
+#include <netpacket/packet.h>
+#include <pcap.h>  
+#include <unistd.h>    // For ioctl
+#include <sys/ioctl.h> // For ioctl
+
+
 
 // Define constants for various sizes and limits
 #define MAX_DOMAINS 100  // Maximum number of domains to track
@@ -62,8 +79,8 @@
 #define GREEN_COLOR   "\033[1;32m"  // Green text color
 #define YELLOW_COLOR  "\033[1;33m"  // Yellow text color
 
-// Declare an external variable used for sniffing state
-extern int sniffing;
+
+
 
 // Define the DNSRecord structure to store DNS query/response details
 typedef struct {
@@ -78,6 +95,13 @@ typedef struct {
     DNSRecord stack[MAX_DOMAINS];  // Array of DNS records
     int top;  // Top index of the stack
 } DNSStack;
+
+
+// Declare an external variable used for sniffing state
+extern int sniffing;
+extern char resolved_domains[MAX_DOMAINS][256];  // Array to store resolved domain names
+extern DNSStack stack;  // Stack to manage DNS queries
+extern FILE *log_file;
 
 // Function Prototypes: Declarations for various functions used in the program
 
@@ -104,6 +128,8 @@ void parse_dns_packet(const unsigned char *dns_data, int data_len);
 
 // Function to handle incoming packets
 void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, const unsigned char *packet);
+
+void safe_log_printf(const char *format, ...);
 
 // Stack-related functions for managing the DNS record stack
 void init_stack(DNSStack *s);  // Initialize the stack

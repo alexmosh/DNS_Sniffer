@@ -170,24 +170,24 @@ void parse_dns_packet(const unsigned char *dns_data, int data_len) {
 
         // Process A (IPv4), AAAA (IPv6), and CNAME records
         if ((type == 1 && rdlength == 4) || (type == 28 && rdlength == 16) || (type == 5)) {  
-            log_printf("\n--------------------------------------------------------\n");
-            log_printf("Domain Name: %s\n", domain);
+            safe_log_printf("\n--------------------------------------------------------\n");
+            safe_log_printf("Domain Name: %s\n", domain);
             
             if (type == 1) {  // A Record (IPv4)
                 struct in_addr ipv4_addr;
                 memcpy(&ipv4_addr, &dns_data[offset], 4);  // Copy IPv4 address
-                log_printf("Resolved IPv4: %s\n", inet_ntoa(ipv4_addr));
+                safe_log_printf("Resolved IPv4: %s\n", inet_ntoa(ipv4_addr));
                 offset += 4;
             } else if (type == 28) {  // AAAA Record (IPv6)
                 char ipv6_addr[INET6_ADDRSTRLEN];
                 inet_ntop(AF_INET6, &dns_data[offset], ipv6_addr, sizeof(ipv6_addr));  // Convert to string
-                log_printf("Resolved IPv6: %s\n", ipv6_addr);
+                safe_log_printf("Resolved IPv6: %s\n", ipv6_addr);
                 offset += 16;
             } else if (type == 5) {  // CNAME Record
-                log_printf("CNAME Record\n");
+                safe_log_printf("CNAME Record\n");
             }
             push(&stack, domain, ipv4, ipv6, cname);  // Push result to stack
-            log_printf("--------------------------------------------------------\n");
+            safe_log_printf("--------------------------------------------------------\n");
         } else {
             offset += rdlength;  // Skip unsupported record types
         }

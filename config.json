@@ -1,4 +1,4 @@
 {
-    "NIC": "en0",
+    "NIC": "enp0s5",
     "Time2Sniff": "30"
 }

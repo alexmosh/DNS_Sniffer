@@ -32,66 +32,72 @@
 
 #include "network_sniffer.h" 
 
+#ifdef __linux__
+#include <netpacket/packet.h>
+#define AF_LINK AF_PACKET
+#endif
+
 // Function to list available network interfaces and their MAC addresses
-void list_interfaces() {
-   char errbuf[PCAP_ERRBUF_SIZE];  // Buffer to hold error messages from pcap functions
-   pcap_if_t *interfaces, *temp;  // Pointers for the list of interfaces and the iterator
 
-   // Retrieve all available network interfaces using pcap
-   if (pcap_findalldevs(&interfaces, errbuf) == -1) {
-       fprintf(stderr, "Error finding devices: %s\n", errbuf);  // Error message if no interfaces found
-       return;
-   }
-
-   // Print the header of the interface list table
-   log_printf("\nAvailable Interfaces:\n");
-   log_printf("+----------------------------------+-----------------------+\n");
-   log_printf("| %-30s | %-21s |\n", "Interface", "Hardware (MAC) Address");
-   log_printf("+----------------------------------+-----------------------+\n");
-
-   // Get the list of all interfaces and their associated addresses
-   struct ifaddrs *ifap, *ifa;  // Pointers to interface addresses
-   if (getifaddrs(&ifap) == -1) {
-       perror("getifaddrs");  // Error retrieving interface addresses
-       return;
-   }
-
-   // Iterate through the available network interfaces and find their MAC addresses
-   for (temp = interfaces; temp; temp = temp->next) {
-       char mac_addr_str[18] = "00:00:00:00:00:00";  // Default MAC address if not found
-
-       // Loop through the list of interface addresses to match the interface and get MAC address
-       for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next) {
-           // If the interface name matches and the address is of type AF_LINK (MAC address)
-           if (ifa->ifa_name && strcmp(ifa->ifa_name, temp->name) == 0 &&
-               ifa->ifa_addr->sa_family == AF_LINK) {  // AF_LINK denotes a MAC address
-               struct sockaddr_dl *sdl = (struct sockaddr_dl *)ifa->ifa_addr;  // Get the sockaddr_dl structure for MAC
-               unsigned char *mac = (unsigned char *)LLADDR(sdl);  // Extract the MAC address from sockaddr_dl
-               log_printf("+--------------------------------------------------------+\n");
-               // Format the MAC address into a readable string
-               snprintf(mac_addr_str, sizeof(mac_addr_str), "%02x:%02x:%02x:%02x:%02x:%02x",
-                        mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-               break;  // Exit the loop once the MAC address is found
-           }
-       }
-
-       // Print the interface name along with its corresponding MAC address
-       log_printf("| %-30s | %-21s |\n", temp->name, mac_addr_str);
-   }
-
-   // Print the footer of the table after listing interfaces
-   log_printf("+----------------------------------+-----------------------+\n");
-
-   // Clean up allocated resources for interfaces and address list
-   pcap_freealldevs(interfaces);  // Free the list of interfaces retrieved by pcap
-   freeifaddrs(ifap);  // Free the list of interface addresses
-}
 
 // Function to stop sniffing when a signal is received
 void stop_sniffing(int sig) {
     int sniffing = 0;  // Stop sniffing by setting the sniffing flag to 0
 }
 
+void list_interfaces() {
+    struct ifaddrs *ifap, *ifa;
+    struct sockaddr_in *sa;
+    int sockfd;
+    struct ifreq ifr;
+    
+    // Retrieve the list of interfaces using getifaddrs
+    if (getifaddrs(&ifap) == -1) {
+        perror("getifaddrs");
+        return;
+    }
+
+    // Print header for the interface list
+    printf("\nAvailable Interfaces:\n");
+    printf("+----------------------------------+-----------------------+\n");
+    printf("| %-30s | %-21s |\n", "Interface", "MAC Address");
+    printf("+----------------------------------+-----------------------+\n");
+
+    // Create a socket to use ioctl for MAC address retrieval
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd == -1) {
+        perror("socket");
+        freeifaddrs(ifap);
+        return;
+    }
+
+    // Iterate through the list of interfaces
+    for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next) {
+        // Only process interfaces that are up (AF_INET) and have a name
+        if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) {
+            // Get the interface name
+            printf("| %-30s | ", ifa->ifa_name);
+
+            // Use ioctl to retrieve the MAC address
+            memset(&ifr, 0, sizeof(struct ifreq));
+            strncpy(ifr.ifr_name, ifa->ifa_name, IFNAMSIZ - 1);
+            
+            // Get the MAC address using ioctl
+            if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) == 0) {
+                unsigned char *mac = (unsigned char *)ifr.ifr_hwaddr.sa_data;
+                printf("%02x:%02x:%02x:%02x:%02x:%02x\n",
+                    mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+            } else {
+                printf("No MAC address\n");
+            }
+        }
+    }
+
+    // Cleanup
+    close(sockfd);
+    freeifaddrs(ifap);
+    printf("+----------------------------------+-----------------------+\n");
+}
 // Function to handle incoming network packets and process DNS data
 void packet_handler(unsigned char *user_data, const struct pcap_pkthdr *pkthdr, const unsigned char *packet) {
    // Extract DNS data by skipping over Ethernet, IP, and UDP headers
